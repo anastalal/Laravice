@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace AnasTalal\Laravice\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class LaraviceCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravice';
 
     public $description = 'My command';
 

@@ -2,9 +2,9 @@
 
 namespace AnasTalal\Laravice\Tests;
 
+use AnasTalal\Laravice\LaraviceServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use AnasTalal\Laravice\LaraviceServiceProvider;
 
 class TestCase extends Orchestra
 {

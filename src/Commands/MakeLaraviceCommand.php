@@ -3,18 +3,17 @@
 namespace AnasTalal\Laravice\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionMethod;
-use Illuminate\Database\Eloquent\Relations\Relation; 
 
 class MakeLaraviceCommand extends Command
 {
     protected $signature = 'make:laravice {model} {--force : Overwrite existing service file}';
 
     protected $description = 'Create a new smart service class for a given model';
-
 
     protected Filesystem $files;
 
@@ -23,13 +22,14 @@ class MakeLaraviceCommand extends Command
         parent::__construct();
         $this->files = $files;
     }
+
     public function handle(): int
     {
-        
+
         // ----- 1. PREPARATION (إعداد المتغيرات) -----
         $modelName = Str::studly(class_basename($this->argument('model'))); // "User" from "App/Models/User"
         $modelFQN = $this->qualifyModel($this->argument('model')); // "App\Models\User"
-        $serviceName = $modelName . 'Service'; // "UserService"
+        $serviceName = $modelName.'Service'; // "UserService"
         $modelVariable = Str::camel($modelName); // "user"
         $servicePath = config('laravice.services_path', app_path('Services'));
         $path = "{$servicePath}/{$serviceName}.php";
@@ -41,9 +41,10 @@ class MakeLaraviceCommand extends Command
         // $path = app_path("Services/{$serviceName}.php");
         $this->ensureDirectoryExists(app_path('Services'));
 
-        if ($this->files->exists($path) && !$this->option('force')) {
-            if (!$this->confirm("Service {$serviceName} already exists. Do you want to overwrite it?")) {
-                $this->info("Operation cancelled.");
+        if ($this->files->exists($path) && ! $this->option('force')) {
+            if (! $this->confirm("Service {$serviceName} already exists. Do you want to overwrite it?")) {
+                $this->info('Operation cancelled.');
+
                 return self::SUCCESS;
             }
         }
@@ -55,15 +56,15 @@ class MakeLaraviceCommand extends Command
         $allMethods = implode("\n\n", array_filter([$methods, $relationshipMethods]));
 
         // ----- 4. POPULATE STUB (تعبئة القالب) -----
-        $stub = $this->files->get(__DIR__ . '/../../stubs/service.stub');
+        $stub = $this->files->get(__DIR__.'/../../stubs/service.stub');
 
         $replacements = [
-           '{{ namespace }}' => config('laravice.services_namespace', 'App\\Services'),
-            '{{ modelFQN }}'      => $modelFQN,
-            '{{ modelName }}'     => $modelName,
-            '{{ class }}'         => $serviceName,
+            '{{ namespace }}' => config('laravice.services_namespace', 'App\\Services'),
+            '{{ modelFQN }}' => $modelFQN,
+            '{{ modelName }}' => $modelName,
+            '{{ class }}' => $serviceName,
             '{{ modelVariable }}' => $modelVariable,
-            '{{ methods }}'       => $allMethods,
+            '{{ methods }}' => $allMethods,
         ];
 
         $content = str_replace(
@@ -80,7 +81,6 @@ class MakeLaraviceCommand extends Command
         return self::SUCCESS;
     }
 
-    
     /**
      * Build the CRUD methods string.
      */
@@ -143,10 +143,9 @@ EOD;
         return implode("\n", [$allMethod, $findMethod, $createMethod, $updateMethod, $deleteMethod]);
     }
 
-
     protected function buildRelationshipMethods(string $modelFQN, string $modelName, string $modelVariable): string
     {
-        if (!class_exists($modelFQN)) {
+        if (! class_exists($modelFQN)) {
             return '';
         }
 
@@ -184,22 +183,22 @@ EOD;
                             $methodsCode[] = $this->createHasManyMethod($modelName, $modelVariable, $relationName);
                             break;
                         case 'BelongsTo':
-                                $methodsCode[] = $this->createBelongsToMethods($modelName, $modelVariable, $relationName);
+                            $methodsCode[] = $this->createBelongsToMethods($modelName, $modelVariable, $relationName);
                             break;
                         case 'BelongsToMany':
-                                $methodsCode[] = $this->createBelongsToManyMethods($modelName, $modelVariable, $relationName);
+                            $methodsCode[] = $this->createBelongsToManyMethods($modelName, $modelVariable, $relationName);
                             break;
                         case 'HasOne':
-                                $methodsCode[] = $this->createHasOneMethod($modelName, $modelVariable, $relationName);
-                                break;
-                         case 'MorphMany':
-                                // إعادة استخدام نفس منطق HasMany لأنه متطابق تقريبًا
-                                $methodsCode[] = $this->createHasManyMethod($modelName, $modelVariable, $relationName);
-                                break;
+                            $methodsCode[] = $this->createHasOneMethod($modelName, $modelVariable, $relationName);
+                            break;
+                        case 'MorphMany':
+                            // إعادة استخدام نفس منطق HasMany لأنه متطابق تقريبًا
+                            $methodsCode[] = $this->createHasManyMethod($modelName, $modelVariable, $relationName);
+                            break;
                         case 'MorphTo':
-                                $methodsCode[] = $this->createMorphToMethods($modelName, $modelVariable, $relationName);
-                                break;
-                            
+                            $methodsCode[] = $this->createMorphToMethods($modelName, $modelVariable, $relationName);
+                            break;
+
                     }
                 }
             } catch (\Throwable $e) {
@@ -211,13 +210,11 @@ EOD;
         return implode("\n", $methodsCode);
     }
 
-  
-
     protected function createBelongsToMethods(string $modelName, string $modelVariable, string $relationName): string
     {
         // "user" -> "User"
         $relatedModelName = Str::studly($relationName);
-        $relatedModelName2 = '\\'. $this->qualifyModel($relatedModelName);
+        $relatedModelName2 = '\\'.$this->qualifyModel($relatedModelName);
         // $relatedModelName = Str::studly($relationName);
         // "user" -> "user"
         $relatedModelVariable = Str::camel($relationName);
@@ -250,16 +247,15 @@ EOD;
         }
     EOD;
 
-        return $associateMethod . "\n" . $dissociateMethod;
+        return $associateMethod."\n".$dissociateMethod;
     }
-
 
     protected function createBelongsToManyMethods(string $modelName, string $modelVariable, string $relationName): string
     {
         // "tags" -> "Tag"
         $relatedModelNamePlural = Str::studly($relationName);
         // "tags" -> "tagIds"
-        $relatedIdsVariable = Str::camel(Str::singular($relationName)) . 'Ids';
+        $relatedIdsVariable = Str::camel(Str::singular($relationName)).'Ids';
 
         $attachMethod = <<<EOD
 
@@ -310,10 +306,10 @@ EOD;
         // "profile" -> "Profile"
         $relatedModelName = Str::studly($relationName);
         // "profile" -> "profileData"
-        $relatedVariableData = Str::camel($relationName) . 'Data';
+        $relatedVariableData = Str::camel($relationName).'Data';
 
         // تحسين اسم الدالة: createRelatedProfile -> createOrUpdateProfile
-        $methodName = 'createOrUpdate' . $relatedModelName;
+        $methodName = 'createOrUpdate'.$relatedModelName;
 
         return <<<EOD
 
@@ -332,10 +328,10 @@ EOD;
         // "comments" -> "Comment"
         $relatedModelName = Str::studly(Str::singular($relationName));
         // "comments" -> "commentData"
-        $relatedVariableData = Str::camel(Str::singular($relationName)) . 'Data';
+        $relatedVariableData = Str::camel(Str::singular($relationName)).'Data';
 
         // تحسين الاسم: createRelatedComment -> createCommentForUser
-        $methodName = 'create' . $relatedModelName . 'For' . $modelName;
+        $methodName = 'create'.$relatedModelName.'For'.$modelName;
 
         return <<<EOD
 
@@ -358,7 +354,7 @@ EOD;
         $parentVariable = 'parent';
 
         // تحسين اسم الدالة: associateCommentable -> associateParent
-        $methodName = 'associate' . Str::studly($parentVariable);
+        $methodName = 'associate'.Str::studly($parentVariable);
 
         return <<<EOD
 
@@ -374,6 +370,7 @@ EOD;
         }
     EOD;
     }
+
     /**
      * Get the fully-qualified model class name.
      */
@@ -389,8 +386,8 @@ EOD;
         }
 
         return is_dir(app_path('Models'))
-            ? $rootNamespace . 'Models\\' . $model
-            : $rootNamespace . $model;
+            ? $rootNamespace.'Models\\'.$model
+            : $rootNamespace.$model;
     }
 
     /**
@@ -402,5 +399,4 @@ EOD;
             $this->files->makeDirectory($path, 0755, true);
         }
     }
-
 }

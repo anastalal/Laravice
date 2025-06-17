@@ -2,12 +2,12 @@
 
 namespace AnasTalal\Laravice;
 
-use Spatie\LaravelPackageTools\Package;
+use AnasTalal\Laravice\Commands\GenerateAllServicesCommand;
 use AnasTalal\Laravice\Commands\LaraviceCommand;
 use AnasTalal\Laravice\Commands\MakeLaraviceCommand;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
-use AnasTalal\Laravice\Commands\GenerateAllServicesCommand;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class LaraviceServiceProvider extends PackageServiceProvider
 {
@@ -25,17 +25,16 @@ class LaraviceServiceProvider extends PackageServiceProvider
             // ->hasMigration('create_laravice_table')
             ->hasCommands([
                 MakeLaraviceCommand::class,
-                GenerateAllServicesCommand::class
+                GenerateAllServicesCommand::class,
             ])
-            ->hasCommand(LaraviceCommand::class)
-            // ->hasInstallCommand(function(InstallCommand $command) {
-            //     $command
-            //         ->publishConfigFile()
-            //        // ->publishAssets()
-            //        // ->publishMigrations()
-            //        // ->copyAndRegisterServiceProviderInApp()
-            //         ->askToStarRepoOnGitHub('anastalal/laravice');
-            // })
-            ;
+            ->hasCommand(LaraviceCommand::class);
+        // ->hasInstallCommand(function(InstallCommand $command) {
+        //     $command
+        //         ->publishConfigFile()
+        //        // ->publishAssets()
+        //        // ->publishMigrations()
+        //        // ->copyAndRegisterServiceProviderInApp()
+        //         ->askToStarRepoOnGitHub('anastalal/laravice');
+        // })
     }
 }
